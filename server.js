@@ -16,6 +16,6 @@ app.get('/',(req,res)=>{
     res.send('<h1>Welcome to My job portal</h1>');
 })
 
-app.listen(808,()=>{
+app.listen(8080,()=>{
     console.log(`Node server is running in ${process.env.DEV_MODE} mode on port ${process.env.PORT}` );
 })
