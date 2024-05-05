@@ -15,6 +15,8 @@ import { errormiddleware } from './middlewares/error.middleware.js';
 //route import
 import authRouter from './routes/auth.router.js'
 import testRouter from './routes/test.router.js';
+import userRouter from './routes/user.router.js';
+import jobRouter from './routes/jobs.router.js';
 
   
 
@@ -30,7 +32,9 @@ app.use(morgan('dev'));//prints a log that have information a about routrs, stat
 
 //routes
 app.use('/api/v1/auth',authRouter);
-app.use('/api/v1/test',testRouter)
+app.use('/api/v1/test',testRouter);
+app.use('/api/v1/user',userRouter)
+app.use('/api/v1/job',jobRouter)
 
 //validation middleware
 app.use(errormiddleware)

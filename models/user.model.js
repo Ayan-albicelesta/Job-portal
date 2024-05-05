@@ -31,6 +31,7 @@ const userSchema=new mongoose.Schema({
 
 //hash password
 userSchema.pre('save',async function(){
+   if(! this.isModified) return;
      const salt=await bcrypt.genSalt(10);
      this.password=await bcrypt.hash(this.password,salt)
 })
@@ -41,7 +42,7 @@ userSchema.methods.comparePassword= async function(password){
 }
 
 userSchema.methods.createToken= function(email){
-    const token=jwt.sign({userId:this._id,email},process.env.SECRET_KEY,{expiresIn:'1h'});
+    const token=jwt.sign({userId:this._id,email},process.env.SECRET_KEY,{expiresIn:'1d'});
     return token;
 }
 
