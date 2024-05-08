@@ -1,4 +1,6 @@
 import Job from "../models/jobs.models.js"
+import mongoose from "mongoose";
+import moment from "moment";
 
 export const createJob= async (req,res,next)=>{
     try {
@@ -85,4 +87,56 @@ export const deleteJob= async (req,res,next)=>{
         msg:"job is not available",
         deletedJob
       })
+}
+
+
+export const jobStats = async (req,res)=>{
+   const stats=await Job.aggregate([
+     //search by user job
+     {
+      $match:{
+        createdBy: new mongoose.Types.ObjectId(req.user.userId)
+      }
+     },
+     {
+      $group:{
+        _id:'$status',
+        count:{
+           $sum:1
+        }
+      }
+     }
+   ])
+ 
+   let monthlyApplication = await Job.aggregate([
+    {
+      $match:{
+        createdBy: new mongoose.Types.ObjectId(req.user.userId)
+      }
+    },
+    {
+      $group:{
+        _id:{
+          year:{$year: '$createdAt'},
+          month:{$month:'$createdAt'}
+        },
+        count:{
+          $sum:1
+        }
+      }
+    }
+   ])
+
+   monthlyApplication=monthlyApplication.map((item)=>{
+     const {_id:{year,month},count}=item;//destrrucring the object and inner object also
+     const date=moment().month(month-1).year(year).format("MMM Y");
+     return{date,count};
+   }).reverse()
+
+   res.status(200).json({
+      totaljob:stats.length,
+      stats,
+      totalApplicationBasedOnMonth:monthlyApplication.length,
+      monthlyApplication
+   })
 }
