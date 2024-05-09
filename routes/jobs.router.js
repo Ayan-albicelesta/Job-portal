@@ -1,14 +1,14 @@
 import express from 'express';
 import userAuth from '../middlewares/auth.middleware.js';
-import { createJob,getAllJobs,updateJob,deleteJob,jobStats} from '../controllers/jobs.controller.js';
+import { createJob,getfilteredJobs,updateJob,deleteJob,jobStats} from '../controllers/jobs.controller.js';
 
 const jobRouter=express.Router();
 
 //create job
 jobRouter.post('/create-job',userAuth,createJob);
 
-//get job
-jobRouter.get('/get-job',userAuth,getAllJobs)
+//filteredjobs
+jobRouter.get('/getfilteredJobs',userAuth,getfilteredJobs)
 
 //update job
 jobRouter.patch('/update-job/:id',userAuth,updateJob)

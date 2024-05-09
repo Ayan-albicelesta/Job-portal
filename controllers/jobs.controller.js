@@ -21,19 +21,6 @@ export const createJob= async (req,res,next)=>{
     }
 }
 
-export const getAllJobs= async (req,res,next)=>{
-    try {
-        const jobs= await Job.find();
-        return res.status(201).json({
-        msg:"retrived all jobs",
-        totaljob:jobs.length,
-        jobs
-    })
-    } catch (error) {
-        return next(error);
-    }
-     
-}
 
 export const updateJob=async(req,res,next)=>{
    try {
@@ -127,6 +114,7 @@ export const jobStats = async (req,res)=>{
     }
    ])
 
+   //uder moment api to parse user-need date-time
    monthlyApplication=monthlyApplication.map((item)=>{
      const {_id:{year,month},count}=item;//destrrucring the object and inner object also
      const date=moment().month(month-1).year(year).format("MMM Y");
@@ -139,4 +127,75 @@ export const jobStats = async (req,res)=>{
       totalApplicationBasedOnMonth:monthlyApplication.length,
       monthlyApplication
    })
+}
+
+
+export const getfilteredJobs= async (req,res,next)=>{
+  try {
+
+    const {status,workType,search,sort}=req.query;
+    const user=req.user.userId;
+
+
+    //this is a bad way to filter cause if I want to another filter option like workType I have to check if is is prvided or not , 
+    // var jobs;
+    // if(status &&  status != 'all'){
+    //  jobs=await Job.find({createdBy:user,status:status})
+    // }
+
+    let query={
+      createdBy:user,
+    }
+    if(status  &&  status != 'all'){
+        query.status=status;
+    }
+    if(workType && workType !='all'){
+       query.workType=workType
+    }
+    //*************VVI*************(using builtin regex in mongoose, to filter data)
+    if(search){////////
+      query.position= { $regex:search , $options: 'i'}//search-->this is the query, 'i' means it will filter out data irrespective of case-sensetive
+    }
+    
+     
+
+    let queryResult = Job.find(query);
+    //sort 
+    if(sort==='latest'){
+      queryResult=queryResult.sort({createdAt: -1})
+    }
+    if(sort==='oldest'){
+      queryResult=queryResult.sort({createdAt: 1})
+    }
+    if(sort==='a-z'){
+      queryResult=queryResult.sort({position:-1})
+    }
+    if(sort==='z-a'){
+      queryResult=queryResult.sort({position:1})
+    }
+
+    //pagination
+    const page=Number(req.query.page) ||1
+    const limit=Number(req.query.limit) ||10
+    const skip=(page-1)*limit
+
+    queryResult=queryResult.skip(skip).limit(limit)
+
+    //jobscount
+    const totalJobs=await Job.countDocuments(queryResult)
+    const numbOfPage=Math.ceil(totalJobs/limit);
+
+
+    const jobs= await queryResult;
+
+      return res.status(201).json({
+      msg:"retrived all jobs",
+      totalJobs,
+      jobs,
+      numbOfPage
+  })
+  } catch (error) {
+      return next(error);
+  }
+   
 }
