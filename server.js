@@ -7,6 +7,9 @@ const app=express();
 import cors from 'cors';
 import morgan from 'morgan';
 
+//security packages
+import helmet from 'helmet';
+import ExpressMongoSanitize from 'express-mongo-sanitize';
 
 //file import
 import connectDB from './config/dbConnect.js';
@@ -22,6 +25,15 @@ import jobRouter from './routes/jobs.router.js';
 
   const PORT= process.env.PORT ||8080;
   connectDB();
+
+
+ //security middleware
+app.use(helmet())//secures headers, helmed is a npm package that we installed, this is not inbuilt module
+app.use((req, res, next) => {//this is inbuit module, that is used to prevent 'cross site scripting' as comapre to 'xss-clean' npm package
+  res.setHeader('Content-Security-Policy', "default-src 'self'");
+  next();
+});
+app.use(ExpressMongoSanitize())//this miidlleware is used to prevnt mongo database attack(hack), hackers injets some script file to db, this npm packges tries to prevent the attack
 
 
  
